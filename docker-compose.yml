@@ -1,0 +1,62 @@
+services:
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - microservices-net
+
+  server-eureka:
+    build: ./server_eureka
+    container_name: server-eureka
+    ports:
+      - "8761:8761"
+    networks:
+      - microservices-net
+
+  client:
+    build: ./client
+    container_name: service-client
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mysql
+      - server-eureka
+    networks:
+      - microservices-net
+
+  car:
+    build: ./car
+    container_name: service-car
+    ports:
+      - "8082:8082"
+    depends_on:
+      - mysql
+      - server-eureka
+    networks:
+      - microservices-net
+
+  gateway:
+    build: ./gateway
+    container_name: gateway
+    ports:
+      - "8888:8888"
+    depends_on:
+      - server-eureka
+    networks:
+      - microservices-net
+
+volumes:
+  mysql_data:
+
+
+networks:
+  microservices-net:
+    driver: bridge
